@@ -11,7 +11,9 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Styles -->
-    <link href="/css/app.css" rel="stylesheet">
+    <link href="{{asset('/css/font-awesome.min.css')}}" rel="stylesheet" type="text/css">
+    <link href="{{asset('/css/app.css')}}" rel="stylesheet">
+    <link href="{{asset('/css/bootstrap.min.css')}}" rel="stylesheet">
 
     <!-- Scripts -->
     <script>
@@ -77,11 +79,13 @@
                 </div>
             </div>
         </nav>
+@include('layouts.menu')
 @include('layouts.profile')
         @yield('content')
     </div>
-@include('layouts.menu')
     <!-- Scripts -->
-    <script src="/js/app.js"></script>
+    <script src="{{asset('/js/app.js')}}"></script>
+    <!-- <script src="{{asset('/js/bootstrap.min.js')}}"></script> -->
+    <script src="{{asset('/js/jquery-3.2.1.min.js')}}"></script>
 </body>
 </html>
