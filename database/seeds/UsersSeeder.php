@@ -4,7 +4,7 @@ use Illuminate\Database\Seeder;
 use App\Role;
 use App\User;
 
-class UserSeeder extends Seeder
+class UsersSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -13,6 +13,7 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
+        //
         //Membuat role admin
         $adminRole = new Role();
         $adminRole->name = "admin";
