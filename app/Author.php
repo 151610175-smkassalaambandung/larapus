@@ -3,7 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Suport\Facades\Session;
+use Illuminate\Support\Facades\Session;
 
 class Author extends Model
 {
@@ -16,26 +16,28 @@ class Author extends Model
 
     public static function boot()
     {
-    	parent::boot();
+        parent::boot();
 
-    	self::deleting(function($author){
-    		//mengecek apakah penulis masih punya buku
-    		if ($author->books->count() > 0) {
-    			//menyiapkan pesan error
-    			$html = 'Penulis tidak bisa dihapus karena masih memiliki buku :';
-    			$html = '<ul>';
-    			foreach ($author->books as $book) {
-    				$html = '<ul>';
+        self::deleting(function($author) {
+            //mengecek apakah author masih punya buku
+            if ($author->books->count() > 0) {
+                //menyiapkan pesan error
+                $html = "Penulis tidak bisa dihapus karena masih memiliki buku :";
+                $html .= "<ul>";
+                foreach ($author->books as $book) {
+                    $html .= "<li>$book->title</li>";
+                }
+                $html .= "</ul>";
 
-    				Session::flash("flash_notification",[
-    					"level"=>"danger",
-    					"message"=>$html
-    					]);
+                Session::flash("flash_notification",[
+                    "level"=>"danger",
+                    "message"=>$html
+                    ]);
 
-    				//membatalkan proses penghapusan
-    				return false;
-    			}
-    		}
-    	});
+                //membatalkan proses penghapusan
+                return false;
+            }
+        });
     }
+
 }
