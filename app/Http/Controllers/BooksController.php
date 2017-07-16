@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\File;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\BorrowLog;
+use Illuminate\Support\Facades\auth;
+use App\Exceptions\BookException;
 
 
 class BooksController extends Controller
@@ -126,12 +130,18 @@ class BooksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateBookRequest $request, $id)
+    public function update(Request $request, $id)
     {
         //
+        $this->validate($request, [
+            'title'     =>'required|unique:books,title,'.$id,
+            'author_id' =>'required|exists:authors,id',
+            'amount'    =>'required|numeric',
+            'cover'     =>'image|max:2048'
+            ]);
 
         $book = Book::find($id);
-        $book->update($request->all());
+        if(!$book->update($request->all())) return redirect()->back();
 
         if ($request->hasFile('cover')) {
             //mengambil cover yg diupload berikut akstensinya
@@ -180,9 +190,11 @@ class BooksController extends Controller
     {
         //
         $book = Book::find($id);
+        $cover = $book->cover;
+        if(!$book->delete()) return redirect()->back();
 
         //hapus cover lama jika ada
-        if ($book->cover) {
+        if ($cover) {
                 $old_cover = $book->cover;
                 $filepath = public_path() . DIRECTORY_SEPARATOR . 'img' . DIRECTORY_SEPARATOR . $book->cover;
 
@@ -193,12 +205,54 @@ class BooksController extends Controller
                 }
             }
 
-            $book->delete();
-
             Session::flash("flash_notification",[
             "level"=>"success",
             "message"=>"Buku Berhasil Dihapus"
             ]);
         return redirect()->route('books.index');
+    }
+
+    public function borrow($id)
+    {
+        try {
+            $book = Book::findorfail($id);
+            Auth::user()->borrow($book);
+            Session::flash("flash_notification",[
+            "level"=>"success",
+            "message"=>"Berhasil Meminjam $book->title"
+            ]);
+        } catch(BookException $e){
+            Session::flash("flash_notification",[
+            "level"=>"danger",
+            "message"=>$e->getMessage()
+            ]);
+        } catch(ModelNotFoundException $e){
+            Session::flash("flash_notification",[
+            "level"=>"danger",
+            "message"=>"Buku tidak ditemukan"
+            ]);
+        }
+
+        return redirect('/');
+    }
+
+    public function returnBack($book_id)
+    {
+        $borrowLog = BorrowLog::where('user_id',Auth::user()->id)
+            ->where('book_id',$book_id)
+            ->where('is_returned',0)
+            ->first();
+
+        if ($borrowLog) {
+            $borrowLog->is_returned = true;
+            $borrowLog->save();
+
+            Session::flash("flash_notification",[
+            "level"=>"success",
+            "message"=>"Berhasil mengembalikan" . $borrowLog->book->title
+            ]);
+        }
+
+        return redirect('/home');
     }
 }
