@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Role;
 use App\User;
+use App\BorrowLog;
 use Yajra\Datatables\Html\Builder;
 use Yajra\Datatables\Datatables;
 use App\Http\Requests\StoreMemberRequest;
@@ -147,15 +148,20 @@ class MembersController extends Controller
     {
         //
         $member = User::find($id);
-
-        if ($member->hasRole('member')) {
+        $buku = BorrowLog::where('user_id','=',$id)->count();
+        if ($member->hasRole('member') && $buku==0)
+        {
             $member->delete();
             Session::flash("flash_notification", [
             "level"=>"success",
-            "message"=>"Member berhasil dihapus"
-            ]);
+            "message"=>"Member Berhasil Dihapus"]);
+       }
+        elseif ($member->hasRole('member') && $buku>0)
+        {
+            Session::flash("flash_notification", [
+            "level"=>"danger",
+            "message"=>"$member->name Masih Meminjam Buku"]);
         }
-
         return redirect()->route('members.index');
     }
 }

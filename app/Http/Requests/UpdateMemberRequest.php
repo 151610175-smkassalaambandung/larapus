@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Requests\StoreMemberRequest;
 
 class UpdateMemberRequest extends StoreMemberRequest
 {
@@ -12,11 +11,6 @@ class UpdateMemberRequest extends StoreMemberRequest
      *
      * @return bool
      */
-    public function authorize()
-    {
-        return false;
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *
